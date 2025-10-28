@@ -1,0 +1,31 @@
+/* Replace the existing .profile-image .image-placeholder styles */
+.profile-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-photo {
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #3498db;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Remove or comment out the old placeholder styles */
+/*
+.profile-image .image-placeholder {
+  width: 250px;
+  height: 250px;
+  background: #3498db;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  margin: 0 auto;
+}
+*/
