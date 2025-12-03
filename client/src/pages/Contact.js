@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import contactService from '../services/contactService.js';
 import './Contact.css';
 
 function Contact() {
@@ -9,6 +10,9 @@ function Contact() {
     phone: '',
     message: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setFormData({
@@ -17,20 +21,40 @@ function Contact() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // For now, just show an alert and log the data
-    alert('Thank you for your message! I will get back to you soon.');
-    console.log('Form submitted:', formData);
-    
-    // Reset form
-    setFormData({
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      message: ''
-    });
+    setLoading(true);
+    setError('');
+    setSuccess(false);
+
+    try {
+      // Combine first and last name into name field for backend
+      const contactData = {
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        subject: formData.phone ? `Phone: ${formData.phone}` : 'Contact Form Submission',
+        message: formData.message
+      };
+
+      await contactService.createContact(contactData);
+      
+      setSuccess(true);
+      // Reset form
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        message: ''
+      });
+
+      // Hide success message after 5 seconds
+      setTimeout(() => setSuccess(false), 5000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to send message. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -89,6 +113,19 @@ function Contact() {
         {/* Contact Form */}
         <div className="contact-form-container">
           <h2>Send Me a Message</h2>
+          
+          {success && (
+            <div className="success-message">
+              ✓ Thank you for your message! I will get back to you soon.
+            </div>
+          )}
+          
+          {error && (
+            <div className="error-message">
+              ✗ {error}
+            </div>
+          )}
+
           <form className="contact-form" onSubmit={handleSubmit}>
             <div className="form-row">
               <div className="form-group">
@@ -154,7 +191,9 @@ function Contact() {
               ></textarea>
             </div>
 
-            <button type="submit" className="submit-btn">Send Message</button>
+            <button type="submit" className="submit-btn" disabled={loading}>
+              {loading ? 'Sending...' : 'Send Message'}
+            </button>
           </form>
         </div>
       </div>

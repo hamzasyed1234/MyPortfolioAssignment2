@@ -1,18 +1,39 @@
-import jwt from "jsonwebtoken";
-import config from "../../config/config.js";
+import jwt from 'jsonwebtoken';
+import User from '../models/user.model.js';
+import config from '../../config/config.js';
 
-export const authMiddleware = (req, res, next) => {
-  // Get token from headers
-  const token = req.headers["authorization"]?.split(" ")[1]; // Bearer <token>
-
-  if (!token) return res.status(401).json({ message: "Access denied. No token provided." });
-
+// Middleware to verify JWT token
+const requireAuth = async (req, res, next) => {
   try {
+    // Get token from header or cookie
+    const token = req.headers.authorization?.split(' ')[1] || req.cookies.token;
+    
+    if (!token) {
+      return res.status(401).json({ 
+        error: 'Authentication required. No token provided.' 
+      });
+    }
+
     // Verify token
     const decoded = jwt.verify(token, config.jwtSecret);
-    req.user = decoded; // attach user info to request
-    next(); // pass control to next middleware/route
-  } catch (err) {
-    res.status(401).json({ message: "Invalid or expired token" });
+    
+    // Find user and attach to request
+    const user = await User.findById(decoded._id).select('-password');
+    
+    if (!user) {
+      return res.status(401).json({ 
+        error: 'User not found. Invalid token.' 
+      });
+    }
+
+    req.user = user;
+    req.userId = user._id;
+    next();
+  } catch (error) {
+    return res.status(401).json({ 
+      error: 'Invalid or expired token. Please login again.' 
+    });
   }
 };
+
+export default requireAuth;

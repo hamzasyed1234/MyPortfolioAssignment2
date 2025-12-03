@@ -1,26 +1,15 @@
-import express from "express";
-import {
-  createContact,
-  getAllContacts,
-  getContactById,
-  updateContact,
-  deleteContact,
-  deleteAllContacts,
-} from "../controllers/contact.controller.js";
-
-import { authMiddleware } from "../middleware/auth.js";
+import express from 'express';
+import { createContact, getAllContacts, deleteContact } from '../controllers/contact.controller.js';
+import requireAuth from '../middleware/auth.js';
+import { requireAdmin } from '../middleware/roleCheck.js';
 
 const router = express.Router();
 
-// Protect all routes with JWT
-router.use(authMiddleware);
+// Public route
+router.post('/', createContact);  // Changed from submitContact
 
-// CRUD routes
-router.post("/", createContact);           // Create new contact
-router.get("/", getAllContacts);          // Get all contacts
-router.get("/:id", getContactById);       // Get contact by ID
-router.put("/:id", updateContact);        // Update contact by ID
-router.delete("/:id", deleteContact);     // Delete contact by ID
-router.delete("/", deleteAllContacts);    // Delete all contacts
+// Protected routes (admin only)
+router.get('/', requireAuth, requireAdmin, getAllContacts);
+router.delete('/:id', requireAuth, requireAdmin, deleteContact);
 
 export default router;

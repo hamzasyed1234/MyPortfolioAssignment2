@@ -16,14 +16,20 @@ export const signup = async (req, res) => {
     const user = new User({
       name,
       email,
-      password
+      password,
+      role: "user" // Default role for new signups
     });
 
     await user.save();
 
     res.status(201).json({
       message: "User registered successfully",
-      user: { _id: user._id, name: user.name, email: user.email }
+      user: { 
+        _id: user._id, 
+        name: user.name, 
+        email: user.email,
+        role: user.role 
+      }
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -43,14 +49,34 @@ export const signin = async (req, res) => {
     const isValid = user.authenticate(password);
     if (!isValid) return res.status(401).json({ message: "Invalid password" });
 
-    // Create JWT token
-    const token = jwt.sign({ _id: user._id }, config.jwtSecret, { expiresIn: "1h" });
+    // Create JWT token with role included
+    const token = jwt.sign(
+      { 
+        _id: user._id,
+        email: user.email,
+        role: user.role // Include role in token
+      }, 
+      config.jwtSecret, 
+      { expiresIn: "24h" } // Extended to 24 hours
+    );
 
     res.json({
       token,
-      user: { _id: user._id, name: user.name, email: user.email }
+      user: { 
+        _id: user._id, 
+        name: user.name, 
+        email: user.email,
+        role: user.role 
+      }
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+};
+
+// Signout (client-side handles token removal, but we provide endpoint)
+export const signout = (req, res) => {
+  res.json({ 
+    message: "Signout successful. Please remove token from client." 
+  });
 };

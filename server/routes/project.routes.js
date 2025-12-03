@@ -8,19 +8,19 @@ import {
   deleteAllProjects,
 } from "../controllers/project.controller.js";
 
-import { authMiddleware } from "../middleware/auth.js";
+import requireAuth from "../middleware/auth.js";
+import { requireAdmin } from "../middleware/roleCheck.js";
 
 const router = express.Router();
 
-// Protect all routes with JWT
-router.use(authMiddleware);
-
-// CRUD routes
-router.post("/", createProject);           // Create new project
+// Public routes - anyone can view projects
 router.get("/", getAllProjects);          // Get all projects
 router.get("/:id", getProjectById);       // Get project by ID
-router.put("/:id", updateProject);        // Update project by ID
-router.delete("/:id", deleteProject);     // Delete project by ID
-router.delete("/", deleteAllProjects);    // Delete all projects
+
+// Admin-only routes - managing projects
+router.post("/", requireAuth, requireAdmin, createProject);           // Create new project
+router.put("/:id", requireAuth, requireAdmin, updateProject);        // Update project by ID
+router.delete("/:id", requireAuth, requireAdmin, deleteProject);     // Delete project by ID
+router.delete("/", requireAuth, requireAdmin, deleteAllProjects);    // Delete all projects
 
 export default router;

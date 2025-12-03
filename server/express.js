@@ -13,7 +13,7 @@ import projectRoutes from "./routes/project.routes.js";
 import qualificationRoutes from "./routes/qualification.routes.js";
 
 // Import JWT middleware
-import { authMiddleware } from "./middleware/auth.js";
+import requireAuth from "./middleware/auth.js";
 
 const app = express();
 
@@ -36,10 +36,10 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes); // Signup, Signin, Signout
 
 // Protected routes
-app.use("/api/users", authMiddleware, userRoutes);
-app.use("/api/contacts", authMiddleware, contactRoutes);
-app.use("/api/projects", authMiddleware, projectRoutes);
-app.use("/api/qualifications", authMiddleware, qualificationRoutes);
+app.use("/api/users", requireAuth, userRoutes);
+app.use("/api/contacts", requireAuth, contactRoutes);
+app.use("/api/projects", requireAuth, projectRoutes);
+app.use("/api/qualifications", requireAuth, qualificationRoutes);
 
 // Error handling
 app.use((err, req, res, next) => {

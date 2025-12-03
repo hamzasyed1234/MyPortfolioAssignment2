@@ -8,19 +8,19 @@ import {
   deleteAllQualifications,
 } from "../controllers/qualification.controller.js";
 
-import { authMiddleware } from "../middleware/auth.js";
+import requireAuth from "../middleware/auth.js";
+import { requireAdmin } from "../middleware/roleCheck.js";
 
 const router = express.Router();
 
-// Protect all routes with JWT
-router.use(authMiddleware);
-
-// CRUD routes
-router.post("/", createQualification);           // Create new qualification
+// Public routes - anyone can view qualifications
 router.get("/", getAllQualifications);          // Get all qualifications
 router.get("/:id", getQualificationById);       // Get qualification by ID
-router.put("/:id", updateQualification);        // Update qualification by ID
-router.delete("/:id", deleteQualification);     // Delete qualification by ID
-router.delete("/", deleteAllQualifications);    // Delete all qualifications
+
+// Admin-only routes - managing qualifications
+router.post("/", requireAuth, requireAdmin, createQualification);           // Create new qualification
+router.put("/:id", requireAuth, requireAdmin, updateQualification);        // Update qualification by ID
+router.delete("/:id", requireAuth, requireAdmin, deleteQualification);     // Delete qualification by ID
+router.delete("/", requireAuth, requireAdmin, deleteAllQualifications);    // Delete all qualifications
 
 export default router;
